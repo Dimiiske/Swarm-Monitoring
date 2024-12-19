@@ -1,0 +1,68 @@
+global:
+  scrape_interval: 30s
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'booking-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['booking-service:8083']
+
+  - job_name: 'report-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['report-service:8086']
+
+  - job_name: 'gateway-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['gateway-service:8087']
+
+  - job_name: 'session-service'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['session-service:8081']
+
+  - job_name: node-exporter
+    static_configs:
+      - targets: ['192.168.0.1:9100', '192.168.0.2:9100', '192.168.0.3:9100']
+
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets: ['google.com']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115
+
+  - job_name: 'cadvisor'
+    dns_sd_configs:
+      - names:
+          - cadvisor
+        type: A
+        port: 8080
+
+  - job_name: 'loki'
+    dns_sd_configs:
+      - names:
+          - loki
+        type: A
+        port: 3100

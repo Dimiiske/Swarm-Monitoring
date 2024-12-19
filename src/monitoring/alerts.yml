@@ -1,0 +1,27 @@
+---
+groups:
+  - name: rules
+    rules:
+
+      - alert: FreeMemoryOnDisk
+        expr: node_memory_MemAvailable_bytes / 1024 / 1024 < 100
+        labels:
+          severity: critical
+        annotations:
+          message: "🔥Free disk memory is less than 100 Mb🔥"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 1024 / 1024 / 1024 > 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          message: "🔥RAM Usage is higher then 1 Gb"
+
+      - alert: CPUUtilizationHigh
+        expr: irate(container_cpu_usage_seconds_total[3m]) * 100 > 10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          message: "🔥CPU Usage is higher then 10%🔥"

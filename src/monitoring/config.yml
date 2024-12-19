@@ -1,0 +1,30 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alertmanager@example.com'
+  smtp_auth_username: 'xxx@gmail.com'
+  smtp_auth_password: 'passwd'
+
+route:
+  receiver: 'alerts'
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 1m
+  repeat_interval: 1m
+
+receivers:
+  - name: 'alerts'
+    email_configs:
+      - to: xxx@gmail.com
+    telegram_configs:
+      - api_url: https://api.telegram.org
+        bot_token: 'token'
+        chat_id: 'chat_id'
+        message: "{{ range .Alerts }}\n  `{{ .Labels.severity }}`  \n  *Description:* {{.Annotations.message }}\n{{ end }}"
+
+inhibit_rules:
+- equal: ['alertname', 'instance']
+  source_matchers:
+    - severity = critical
+  target_matchers:
+    - "severity =~ warning|info"

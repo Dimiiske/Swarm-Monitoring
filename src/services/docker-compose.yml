@@ -1,0 +1,101 @@
+version: '3.3'
+
+services:
+
+  rabbitmq:
+    image: rabbitmq:3.10-management
+    networks:
+      - public
+
+  database:
+    image: dimiiske/database-service:v0.1
+    env_file:
+      - ./default.env
+    depends_on:
+      - rabbitmq
+    networks:
+      - public
+
+  booking-service:
+    image: dimiiske/booking-service:prometheus
+    env_file:
+      - ./default.env
+    environment:
+      - POSTGRES_DB=reservations_db
+    depends_on:
+      - database
+    networks:
+      - public
+
+  gateway-service:
+    image: dimiiske/gateway-service:prometheus
+    env_file:
+      - ./default.env
+    ports:
+      - 8087:8087
+    depends_on:
+      - database
+    networks:
+      - public
+
+  hotel-service:
+    image: dimiiske/hotel-service:v0.1
+    env_file:
+      - ./default.env
+    environment:
+      - POSTGRES_DB=hotels_db
+    depends_on:
+      - database
+    networks:
+      - public
+
+  loyalty-service:
+    image: dimiiske/loyalty-service:v0.1
+    env_file:
+      - ./default.env
+    environment:
+      - POSTGRES_DB=balances_db
+    depends_on:
+      - database
+    networks:
+      - public
+
+  payment-service:
+    image: dimiiske/payment-service:v0.1
+    env_file:
+      - ./default.env
+    environment:
+      - POSTGRES_DB=payments_db
+    depends_on:
+      - database
+    networks:
+      - public
+
+  report-service:
+    image: dimiiske/report-service:prometheus
+    env_file:
+      - ./default.env
+    environment:
+      - POSTGRES_DB=statistics_db
+    depends_on:
+      - database
+    networks:
+      - public
+
+  session-service:
+    image: dimiiske/session-service:prometheus
+    env_file:
+      - ./default.env
+    environment:
+      - POSTGRES_DB=users_db
+    ports:
+      - 8081:8081
+    depends_on:
+      - database
+    networks:
+      - public
+
+networks:
+  public:
+    external:
+      name: public
